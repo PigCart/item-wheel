@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "id": "wheel",
+  "version": "${version}",
+  "name": "Wheel",
+  "description": "Makes dispensers/droppers more exciting :)",
+  "authors": [
+    "PigCart"
+  ],
+  "contact": {
+    "homepage": "https://fabricmc.net/",
+    "sources": "https://github.com/FabricMC/fabric-example-mod"
+  },
+  "license": "MIT",
+  "icon": "assets/itemwheel/icon.png",
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "pigcart.itemwheel.fabric.ItemWheelFabric"
+    ]
+  },
+  "mixins": [
+    "wheel.mixins.json",
+    "wheel-common.mixins.json"
+  ],
+  "depends": {
+    "fabric": "*",
+    "minecraft": "1.20.1",
+    "architectury": ">=9.1.12"
+  }
+}

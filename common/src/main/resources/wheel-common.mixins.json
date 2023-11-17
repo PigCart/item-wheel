@@ -1,0 +1,16 @@
+{
+  "required": true,
+  "package": "pigcart.itemwheel.mixin",
+  "compatibilityLevel": "JAVA_17",
+  "minVersion": "0.8",
+  "client": [
+  ],
+  "mixins": [
+    "DispenserBlockEntityMixin",
+    "DispenserBlockMixin",
+    "DisplayMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}
