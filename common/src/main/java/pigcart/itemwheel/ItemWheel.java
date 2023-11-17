@@ -4,7 +4,6 @@ import dev.architectury.event.events.common.LifecycleEvent;
 import dev.architectury.event.events.common.TickEvent;
 import net.minecraft.commands.arguments.EntityAnchorArgument;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.BlockSourceImpl;
 import net.minecraft.core.Vec3i;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
@@ -14,7 +13,8 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.BaseEntityBlock;
-import net.minecraft.world.level.block.entity.RandomizableContainerBlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.entity.DispenserBlockEntity;
 import net.minecraft.world.level.block.state.properties.DirectionProperty;
 
 import java.util.ArrayList;
@@ -70,8 +70,12 @@ public class ItemWheel {
         if (preExistingWheel != null) {
             return preExistingWheel.spinPercent >= 1;
         }
-        BlockSourceImpl blockSourceImpl = new BlockSourceImpl(serverLevel, blockPos);
-        RandomizableContainerBlockEntity container = blockSourceImpl.getEntity();
+        DispenserBlockEntity container = (DispenserBlockEntity)serverLevel.getBlockEntity(blockPos, BlockEntityType.DISPENSER).orElse((DispenserBlockEntity) null);
+        if (container == null) {
+            return true;
+        }
+        //BlockSourceImpl blockSourceImpl = new BlockSourceImpl(serverLevel, blockPos);
+        //RandomizableContainerBlockEntity container = blockSourceImpl.getEntity();
         int middleSlotIndex = container.getContainerSize() / 2;
         ItemStack middleSlot = container.getItem(middleSlotIndex);
         if (middleSlot.getItem() == Items.COMPASS) {
@@ -107,6 +111,7 @@ public class ItemWheel {
             return false;
         }
         return true;
+
     }
     private static void createDisplayEntity(ItemStack itemStack, float angle, float finalAngle, float scale, float offset, boolean isChosenItem, ServerLevel serverLevel, BlockPos blockPos, Vec3i normal, Wheel wheel) {
         Display.ItemDisplay entity = new Display.ItemDisplay(EntityType.ITEM_DISPLAY, serverLevel);
