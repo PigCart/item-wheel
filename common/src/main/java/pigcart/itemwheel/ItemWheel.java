@@ -107,16 +107,15 @@ public class ItemWheel {
             createDisplayEntity(banners[i % banners.length], angle, finalAngle, 1, 0, isChosen, serverLevel, blockPos, normal, wheel);
 
             ItemStack itemStack = container.getItem(wheelItemIndeces.get(i));
-            createDisplayEntity(itemStack, angle, finalAngle, 0.5f, 0.1f, isChosen, serverLevel, blockPos, normal, wheel);
+            createDisplayEntity(itemStack, angle, finalAngle, 0.5f, -0.1f, isChosen, serverLevel, blockPos, normal, wheel);
         }
         return false;
     }
     private static void createDisplayEntity(ItemStack itemStack, float angle, float finalAngle, float scale, float offset, boolean isChosenItem, ServerLevel serverLevel, BlockPos blockPos, Vec3i normal, Wheel wheel) {
         Display.ItemDisplay entity = new Display.ItemDisplay(EntityType.ITEM_DISPLAY, serverLevel);
-        // in 1.19.4 item displays are flipped
         ((DisplayAccess)entity).itemWheel_setInitialData(angle, finalAngle, scale, offset, isChosenItem, itemStack, wheel);
         entity.setPos(blockPos.getCenter());
-        entity.lookAt(EntityAnchorArgument.Anchor.FEET, blockPos.getCenter().add(normal.getX(), normal.getY(), normal.getZ()));
+        entity.lookAt(EntityAnchorArgument.Anchor.FEET, blockPos.getCenter().subtract(normal.getX(), normal.getY(), normal.getZ()));
         serverLevel.addFreshEntity(entity);
         wheel.displayEntities.add(entity);
     }
