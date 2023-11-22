@@ -1,12 +1,10 @@
 package pigcart.itemwheel.mixin;
 
 import com.mojang.math.Transformation;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Brightness;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Display;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.Level;
 import org.joml.AxisAngle4d;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;

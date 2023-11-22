@@ -4,7 +4,6 @@ import dev.architectury.event.events.common.LifecycleEvent;
 import dev.architectury.event.events.common.TickEvent;
 import net.minecraft.commands.arguments.EntityAnchorArgument;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.BlockSourceImpl;
 import net.minecraft.core.Vec3i;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
@@ -14,6 +13,7 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.BaseEntityBlock;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.RandomizableContainerBlockEntity;
 import net.minecraft.world.level.block.state.properties.DirectionProperty;
 
@@ -70,49 +70,53 @@ public class ItemWheel {
         if (preExistingWheel != null) {
             return preExistingWheel.spinPercent >= 1;
         }
-        BlockSourceImpl blockSourceImpl = new BlockSourceImpl(serverLevel, blockPos);
-        RandomizableContainerBlockEntity container = blockSourceImpl.getEntity();
+        BlockEntity blockEntity = serverLevel.getBlockEntity(blockPos);
+        if (!(blockEntity instanceof RandomizableContainerBlockEntity container)) {
+            return true;
+        }
         int middleSlotIndex = container.getContainerSize() / 2;
         ItemStack middleSlot = container.getItem(middleSlotIndex);
-        if (middleSlot.getItem() == Items.COMPASS) {
-            int size = container.getContainerSize();
-            ArrayList<Integer> wheelItemIndeces = new ArrayList<>();
-            for (int i = 0; i < size; i++) {
-                if (i != middleSlotIndex) {
-                    ItemStack itemStack = container.getItem(i);
-                    if (!itemStack.isEmpty()) {
-                        wheelItemIndeces.add(i);
-                    }
-                }
-            }
-            if (wheelItemIndeces.size() != 0) {
-                Random random = new Random();
-                int chosenWheelItemIndex = random.nextInt(wheelItemIndeces.size());
-                Wheel wheel = new Wheel(serverLevel, blockPos, block, wheelItemIndeces.get(chosenWheelItemIndex));
-                ItemWheel.activeWheels.add(wheel);
-                for (int i = 0; i < wheelItemIndeces.size(); i++) {
-                    boolean isChosen = i == chosenWheelItemIndex;
-
-                    float segmentAngle = Mth.TWO_PI / wheelItemIndeces.size();
-                    float angle = segmentAngle * i;
-                    float chosenItemAngle = segmentAngle * chosenWheelItemIndex;
-                    float finalAngle = angle + ((Mth.TWO_PI * wheelRotations) - chosenItemAngle);
-                    Vec3i normal = container.getBlockState().getValue(FACING).getNormal();
-                    createDisplayEntity(banners[i % banners.length], angle, finalAngle, 1, 0, isChosen, serverLevel, blockPos, normal, wheel);
-
-                    ItemStack itemStack = container.getItem(wheelItemIndeces.get(i));
-                    createDisplayEntity(itemStack, angle, finalAngle, 0.5f, -0.1f, isChosen, serverLevel, blockPos, normal, wheel);
-                }
-            }
-            return false;
+        if (middleSlot.getItem() != Items.COMPASS) {
+            return true;
         }
-        return true;
+        int size = container.getContainerSize();
+        ArrayList<Integer> wheelItemIndeces = new ArrayList<>();
+        for (int i = 0; i < size; i++) {
+            if (i != middleSlotIndex) {
+                ItemStack itemStack = container.getItem(i);
+                if (!itemStack.isEmpty()) {
+                    wheelItemIndeces.add(i);
+                }
+            }
+        }
+        if (wheelItemIndeces.size() == 0) {
+            return true;
+        }
+        Random random = new Random();
+        int chosenWheelItemIndex = random.nextInt(wheelItemIndeces.size());
+        Wheel wheel = new Wheel(serverLevel, blockPos, block, wheelItemIndeces.get(chosenWheelItemIndex));
+        ItemWheel.activeWheels.add(wheel);
+        for (int i = 0; i < wheelItemIndeces.size(); i++) {
+            boolean isChosen = i == chosenWheelItemIndex;
+
+            float segmentAngle = Mth.TWO_PI / wheelItemIndeces.size();
+            float angle = segmentAngle * i;
+            float chosenItemAngle = segmentAngle * chosenWheelItemIndex;
+            float finalAngle = angle + ((Mth.TWO_PI * wheelRotations) - chosenItemAngle);
+            Vec3i normal = container.getBlockState().getValue(FACING).getNormal();
+            createDisplayEntity(banners[i % banners.length], angle, finalAngle, 1, 0, isChosen, serverLevel, blockPos, normal, wheel);
+
+            ItemStack itemStack = container.getItem(wheelItemIndeces.get(i));
+            createDisplayEntity(itemStack, angle, finalAngle, 0.5f, 0.1f, isChosen, serverLevel, blockPos, normal, wheel);
+        }
+        return false;
     }
     private static void createDisplayEntity(ItemStack itemStack, float angle, float finalAngle, float scale, float offset, boolean isChosenItem, ServerLevel serverLevel, BlockPos blockPos, Vec3i normal, Wheel wheel) {
         Display.ItemDisplay entity = new Display.ItemDisplay(EntityType.ITEM_DISPLAY, serverLevel);
+        // in 1.19.4 item displays are flipped
         ((DisplayAccess)entity).itemWheel_setInitialData(angle, finalAngle, scale, offset, isChosenItem, itemStack, wheel);
         entity.setPos(blockPos.getCenter());
-        entity.lookAt(EntityAnchorArgument.Anchor.FEET, blockPos.getCenter().subtract(normal.getX(), normal.getY(), normal.getZ()));
+        entity.lookAt(EntityAnchorArgument.Anchor.FEET, blockPos.getCenter().add(normal.getX(), normal.getY(), normal.getZ()));
         serverLevel.addFreshEntity(entity);
         wheel.displayEntities.add(entity);
     }
